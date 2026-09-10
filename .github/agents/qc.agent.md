@@ -102,6 +102,7 @@ APPROVED requires ALL of the following — no exceptions, no "pay later":
 - [ ] No duplicated logic above the DRY threshold (extract to shared utility)
 Any violation = release-blocking finding (minimum HIGH severity); verdict stays REJECTED until cleared.
 CONDITIONAL verdicts MUST NOT carry debt items — conditions may only cover non-debt follow-ups (docs polish, monitoring tweaks).
+If the review is inconclusive due to model limits (unfamiliar stack, diff too large), the verdict MUST be CONDITIONAL or REJECTED with the reason stated — never guess APPROVED.
 
 ## Severity Levels
 - **CRITICAL**: Security vulnerability, data loss risk, system crash — MUST block release
@@ -131,6 +132,7 @@ CONDITIONAL verdicts MUST NOT carry debt items — conditions may only cover non
 - DO NOT skip security review — it's part of every release gate
 - DO NOT approve without seeing passing test results
 - NEVER approve code carrying technical debt — debt is a blocker, not a follow-up
+- ALWAYS use a different model family than the implementing Dev agent for HIGH-risk reviews (auth, payments, PII, prod) — declare both model names in the report
 - ALWAYS provide specific file:line references for every issue
 - ALWAYS give a clear verdict — no ambiguous recommendations
 - ALWAYS consider rollback scenarios in your risk assessment

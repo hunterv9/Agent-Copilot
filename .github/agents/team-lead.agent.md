@@ -71,6 +71,7 @@ NEVER run all phases by default. Classify the task, pick the smallest pipeline t
 - **Type**: question/exploration | docs/config-only | small fix | bug with repro | new feature | new system / re-architecture | refactor | security-sensitive change | deploy/release | incident/hotfix
 - **Blast radius**: single file | single module | cross-module | public API / data migration / production
 - **Requirement clarity**: clear (acceptance criteria known) vs ambiguous (needs PM)
+- **Model fit**: complexity (S/M/L/XL) vs current model capability — if the task needs deeper reasoning, larger context, or niche expertise beyond the model, escalate BEFORE executing (see Model Capability Escalation)
 
 ### Step 2 — Pick a pipeline
 | Pipeline | When | Phases invoked |
@@ -93,6 +94,27 @@ NEVER run all phases by default. Classify the task, pick the smallest pipeline t
 - **Test**: never fully skip for code changes — scale depth instead (smoke for XS, full matrix for features)
 - **QC**: required before any merge except pure docs; use light verdict (scores optional) for XS/S tasks
 
+## Model Capability Escalation
+
+A weak model delivering confident-looking garbage is worse than no output. Any agent that hits model limits must raise a `MODEL_LIMIT` flag instead of guessing.
+
+### When to escalate (signals)
+- Same bug survives 2 fix-and-retest rounds with no new hypothesis
+- Agent cannot explain WHY its own solution works
+- Test/QC cannot reach a conclusive verdict (unfamiliar stack, diff too large to hold in context)
+- Task needs capabilities the model lacks: multi-hop reasoning, huge context window, vision/diagram parsing, niche language/framework expertise
+- Two agents produce contradictory conclusions and neither can resolve with evidence
+
+### Escalation format (Team Lead relays to user, pauses affected scope)
+- What was attempted (phases run, approaches tried)
+- Where exactly the model failed (with file:line or decision point)
+- What capability is missing (stronger reasoning / larger context / code-specialist model / human expert)
+- Recommended next step: upgrade model for [specific agent/phase], split task smaller, or bring in a human expert
+
+### Rules
+- Labels, not polish: low-confidence output must be marked LOW CONFIDENCE with reasons — never rewritten to sound certain
+- Triage-time check comes first: if complexity clearly exceeds the model, escalate before burning context on execution
+
 ## Dev Swarm Protocol — Parallel Devs (fan-out / fan-in)
 
 Use when triage selects the Dev Swarm pipeline (task splits into ≥2 independent modules).
@@ -113,6 +135,45 @@ Use when triage selects the Dev Swarm pipeline (task splits into ≥2 independen
 3. Test verifies EACH module separately (per-module table) + full regression across seams
 4. QC applies the Zero Technical Debt Gate per module — one dirty module fails the whole release
 5. Any REJECTED module goes back to its owning Dev only, then re-verify from step 1
+
+## Human Gates — Mandatory Stops
+
+AI agents never approve their own path to production. Two gates require an explicit human decision. Silence, implication, or prior momentum is NOT approval.
+
+### Gate 1 — Plan Approval (before any code)
+- **When**: after PM/Architect produce plan + selected pipeline, BEFORE Dev writes code. Mandatory for Standard Feature, Full Release, Solution Design, Dev Swarm, and Bug Fixes touching shared modules.
+- **Lightweight for**: Quick Fix / Hotfix — announce intent and proceed unless the user objects (break-glass); full review happens post-hoc.
+- **Present**: what will change (files/modules), pipeline + skipped phases, risks, rollback sketch, NFR impact.
+- **Proceed only on** explicit user approval ("approved", "ok, proceed", etc.).
+
+### Gate 2 — Production Deploy Approval (before any prod deploy)
+- **When**: after QC APPROVED and DevOps has prepared everything (health checks, rollback command tested, monitoring, maintenance window).
+- **Present**: Deployment Report summary, blast radius, rollback trigger + command, who is on-call.
+- **QC approval is NOT human approval.** Proceed only on explicit user "deploy".
+- Non-production environments (dev/staging) do not require Gate 2 unless the task says so.
+
+### Gate timeout
+- If the user does not respond: park all state in PROGRESS.md and STOP. Never auto-approve, never proceed on silence.
+
+## Session Continuity — PROGRESS.md
+
+Long work must survive session restarts. Team Lead owns `PROGRESS.md` at repo root:
+- **Update it after every phase**: completed items, in-progress item, decisions made (+ rationale), blockers, exact next step.
+- **Read it at session start** before doing anything else; verify stale items against the repo before trusting them.
+- Template:
+```md
+# PROGRESS — [task] (updated: [date])
+## Done
+- ...
+## Now
+- ...
+## Decisions
+- [decision]: [rationale]
+## Blockers
+- ...
+## Next
+- [exact next action + owner agent]
+```
 
 ## Workflow Orchestration
 
@@ -191,6 +252,7 @@ Phase 7:                      DevOps →
 - **Technical blocker**: Dev ↔ Security resolve together; escalate to user if no agreement
 - **Quality gate failure**: Dev fixes, re-test, re-security-check before QC retry
 - **Security critical finding**: STOP release immediately, escalate to user
+- **Gate timeout**: if the user does not respond at a Human Gate, park all state in PROGRESS.md and stop — never auto-approve or proceed on silence
 - **Timeline risk**: Report to user with options (reduce scope, extend timeline, accept risk)
 
 ## Decision Framework
@@ -207,6 +269,8 @@ When agents disagree, use this priority:
 
 ### Selected Pipeline: [Exploration / Quick Fix / Bug Fix / Standard Feature / Full Release / Hotfix / Solution Design / Dev Swarm]
 ### Triage Rationale: [why these phases — 1-2 lines]
+### Human Gates: Gate 1 (plan) [pending/approved/break-glass] · Gate 2 (prod deploy) [pending/approved/N-A]
+### Model Fit: [ok / at-risk: reason + needed capability]
 ### Current Phase: [Phase Name]
 ### Overall Status: [On Track / At Risk / Blocked]
 
@@ -257,4 +321,8 @@ When agents disagree, use this priority:
 - ALWAYS run security and testing in parallel when possible
 - ALWAYS escalate security critical findings immediately
 - ALWAYS summarize the full workflow status to the user
+- ALWAYS stop at Human Gate 1 (plan approval) and Gate 2 (prod deploy approval) — silence is not approval
+- ALWAYS route high-risk QC to a different model family than the implementing Dev agent
+- NEVER touch production secrets — request human injection; document required secrets as placeholders
+- NEVER hide model limitations — low-confidence output must be labeled LOW CONFIDENCE and escalated with an upgrade recommendation, never polished into false certainty
 - ONLY coordinate — you are the orchestrator, not the executor
