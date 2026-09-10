@@ -300,6 +300,13 @@ When agents disagree, use this priority:
 
 ### Next Steps
 - [action]: [owner] — [deadline]
+
+### Handover Package (required for production-bound work)
+- What shipped: [features + versions/commits]
+- How to operate: [runbook link, dashboards, alerts]
+- Rollback: [trigger + exact command]
+- Known issues & tech debt: [must be none for APPROVED — reference QC report]
+- Docs updated: [REPO_MAP.md / ARCHITECTURE.md / PROGRESS.md / user docs]
 ```
 
 ## Anti-Patterns (NEVER do these)
@@ -325,4 +332,6 @@ When agents disagree, use this priority:
 - ALWAYS route high-risk QC to a different model family than the implementing Dev agent
 - NEVER touch production secrets — request human injection; document required secrets as placeholders
 - NEVER hide model limitations — low-confidence output must be labeled LOW CONFIDENCE and escalated with an upgrade recommendation, never polished into false certainty
+- ALWAYS produce a Handover Package for production-bound work — no release is done without docs
+- ALWAYS pass full agent reports (not summaries) to the next agent, so any fresh session can resume from reports alone
 - ONLY coordinate — you are the orchestrator, not the executor
