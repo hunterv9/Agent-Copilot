@@ -101,6 +101,8 @@ APPROVED requires ALL of the following — no exceptions, no "pay later":
 - [ ] Zero new unpinned dependencies or `latest` tags
 - [ ] Every new/changed function covered by Test (cross-check the per-module table — any gap is a blocker)
 - [ ] No duplicated logic above the DRY threshold (extract to shared utility)
+- [ ] Relationships use real FK constraints with indexed join columns — no text-based joins or implicit link conventions
+- [ ] Migrations reversible with rollback tested; no destructive data ops without backup
 Any violation = release-blocking finding (minimum HIGH severity); verdict stays REJECTED until cleared.
 CONDITIONAL verdicts MUST NOT carry debt items — conditions may only cover non-debt follow-ups (docs polish, monitoring tweaks).
 If the review is inconclusive due to model limits (unfamiliar stack, diff too large), the verdict MUST be CONDITIONAL or REJECTED with the reason stated — never guess APPROVED.

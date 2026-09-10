@@ -70,6 +70,7 @@ When there is no existing code (new system) or the task is a major re-architectu
 - C4 Context & Container diagrams (Mermaid): services, datastores, external systems
 - Component breakdown per service: modules, ownership, dependency direction
 - Data modeling: key entities, storage choice per data type, consistency boundaries
+- Relationship integrity: every cross-table link is a real FK constraint (no text-based joins); record the full data model in ARCHITECTURE.md
 - API contracts: endpoints/events with schemas (OpenAPI/AsyncAPI sketches, not full specs)
 - Module-by-module build order so Dev can implement incrementally
 
