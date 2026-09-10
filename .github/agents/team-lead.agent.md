@@ -81,6 +81,7 @@ NEVER run all phases by default. Classify the task, pick the smallest pipeline t
 | Standard Feature | Clear requirements, low-risk area | Dev → Test (+ Security if surface touched) → QC → DevOps (only if releasing) |
 | Full Release | New public API, auth/payments/PII, data migration, infra change | All phases 0–7 |
 | Solution Design | New system or major re-architecture | Architect (Greenfield → `ARCHITECTURE.md`) → PM (spec) → Dev |
+| Dev Swarm | Task splits into ≥2 independent modules | Architect (contracts) → 2-3 Devs in parallel → Test per module + regression → QC (zero-debt gate) |
 | Hotfix | Production incident | Dev → Test (targeted) → QC (fast verdict) → DevOps; post-mortem follow-up after |
 
 ### Step 3 — Apply skip rules per agent
@@ -91,6 +92,27 @@ NEVER run all phases by default. Classify the task, pick the smallest pipeline t
 - **DevOps**: skip unless the task ends in a deployment or release
 - **Test**: never fully skip for code changes — scale depth instead (smoke for XS, full matrix for features)
 - **QC**: required before any merge except pure docs; use light verdict (scores optional) for XS/S tasks
+
+## Dev Swarm Protocol — Parallel Devs (fan-out / fan-in)
+
+Use when triage selects the Dev Swarm pipeline (task splits into ≥2 independent modules).
+
+### Fan-out (Architect first, always)
+- Architect defines module boundaries + interfaces/contracts BEFORE any Dev starts
+- Team Lead assigns exclusive file ownership: each Dev gets listed paths; touching another Dev's paths is a violation → work sent back
+- Each Dev receives: scope paths, contract to implement against, acceptance criteria, test focus
+
+### Execution
+- Spawn 2-3 Dev subagents (never more than 3 — coordination cost explodes)
+- Devs work in parallel; they do NOT review or depend on each other mid-flight
+- If a Dev discovers the contract is wrong/incomplete: STOP, escalate to Team Lead — never renegotiate contracts peer-to-peer
+
+### Fan-in (merge + verify)
+1. Team Lead merges in contract order (lowest dependency first)
+2. Resolve conflicts by contract: contract wins, implementation adapts
+3. Test verifies EACH module separately (per-module table) + full regression across seams
+4. QC applies the Zero Technical Debt Gate per module — one dirty module fails the whole release
+5. Any REJECTED module goes back to its owning Dev only, then re-verify from step 1
 
 ## Workflow Orchestration
 
@@ -183,7 +205,7 @@ When agents disagree, use this priority:
 ```
 ## Team Status Report
 
-### Selected Pipeline: [Exploration / Quick Fix / Bug Fix / Standard Feature / Full Release / Hotfix / Solution Design]
+### Selected Pipeline: [Exploration / Quick Fix / Bug Fix / Standard Feature / Full Release / Hotfix / Solution Design / Dev Swarm]
 ### Triage Rationale: [why these phases — 1-2 lines]
 ### Current Phase: [Phase Name]
 ### Overall Status: [On Track / At Risk / Blocked]

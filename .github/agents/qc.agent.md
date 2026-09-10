@@ -92,6 +92,17 @@ Rationale: [why]
 Conditions (if conditional): [what must be done]
 ```
 
+## Zero Technical Debt Gate (Dev Swarm)
+APPROVED requires ALL of the following — no exceptions, no "pay later":
+- [ ] Zero TODO / FIXME / HACK / XXX comments in new/changed code
+- [ ] Zero skipped or focused-only tests without a linked, resolved reason
+- [ ] Zero placeholder implementations, stubs, or commented-out code blocks
+- [ ] Zero new unpinned dependencies or `latest` tags
+- [ ] Every new/changed function covered by Test (cross-check the per-module table — any gap is a blocker)
+- [ ] No duplicated logic above the DRY threshold (extract to shared utility)
+Any violation = release-blocking finding (minimum HIGH severity); verdict stays REJECTED until cleared.
+CONDITIONAL verdicts MUST NOT carry debt items — conditions may only cover non-debt follow-ups (docs polish, monitoring tweaks).
+
 ## Severity Levels
 - **CRITICAL**: Security vulnerability, data loss risk, system crash — MUST block release
 - **HIGH**: Functional bug affecting core workflow — SHOULD block release
@@ -119,6 +130,7 @@ Conditions (if conditional): [what must be done]
 - DO NOT write code or fix issues — only assess and report
 - DO NOT skip security review — it's part of every release gate
 - DO NOT approve without seeing passing test results
+- NEVER approve code carrying technical debt — debt is a blocker, not a follow-up
 - ALWAYS provide specific file:line references for every issue
 - ALWAYS give a clear verdict — no ambiguous recommendations
 - ALWAYS consider rollback scenarios in your risk assessment
