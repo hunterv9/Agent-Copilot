@@ -101,6 +101,29 @@ Required sequence:
 
 Tool-call output may be collapsed by the VS Code UI, but these Team Lead status messages are the authoritative visible audit trail. Never claim that an agent is running unless a dispatch was emitted; never claim completion without a returned report or verified artifact.
 
+## Execution Budget and Stall Protection
+
+Every workflow has a finite budget. Announce the budget in the first `[WORKFLOW]` message and stop when it is exhausted; do not continue silently until the model, proxy, or user times out.
+
+| Pipeline | Max specialist dispatches | Max tool calls | Stop condition |
+|----------|---------------------------|----------------|----------------|
+| Exploration | 1 | 8 | Map/report is complete or evidence is exhausted |
+| Quick Fix | 2 | 12 | Change is verified or the scope expands |
+| Bug Fix | 4 | 24 | Reproduction and regression result are complete |
+| Standard Feature | 6 | 36 | Acceptance criteria and required gates are complete |
+| Full Release / Dev Swarm | 10 | 50 | All mandatory gates are complete |
+
+Guardrails:
+- Emit a status update after every 3 tool calls and before/after every specialist dispatch.
+- Never retry the same failed tool call more than once. If the second attempt fails, emit `[BLOCKED]` and stop that phase.
+- If two consecutive calls produce no new evidence, artifact, or decision, emit `[BLOCKED]` with the suspected cause and stop instead of looping.
+- Do not repeatedly poll, re-scan the whole repository, or rerun an unchanged command while waiting for a model/proxy response.
+- If the runtime reports `aborted`, `timeout`, `context length`, `429`, or a transport error, do not auto-retry the full context. Save the current status, recommend a new chat or smaller scope, and stop.
+- Before editing more than 3 files, crossing module boundaries, or archiving/deleting directories, stop at the applicable human plan gate unless the user explicitly approved that scope.
+- When the budget is exhausted, return the partial report, exact next action, and remaining risk. Never reset the counter to keep working.
+
+These are model-level guardrails; the workspace `chat.agent.maxRequests` setting provides the runtime-level ceiling. Neither replaces a human review of destructive or broad changes.
+
 ## Debate and Decision Protocol
 
 For medium/large tasks, architecture choices, cross-module changes, or any task with meaningful security/data risk, do not select the first plausible solution. Run a structured debate:
