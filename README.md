@@ -45,6 +45,17 @@ Chỉ cần gọi **Team Lead**, mô tả task. Nó sẽ:
 
 Frontmatter đang dùng `model: "Free_Model"` — dành cho setup proxy nhiều model. Proxy của bạn phải expose đúng model ID `Free_Model` trong model picker của VS Code, nếu không Copilot sẽ fallback về model đang chọn. Muốn cố định model thật thì sửa thành tên chuẩn, ví dụ `model: 'GPT-5.2'` hoặc `model: 'Claude Sonnet 4.5 (copilot)'`.
 
+## Extension phụ trợ — 9Router (proxy model)
+
+Team này dùng `model: "Free_Model"` qua proxy. Cài đúng 1 router duy nhất từ file đính kèm trong repo:
+
+```powershell
+code --install-extension .\extensions\9router-for-github-copilot-2.0.0.vsix --force
+```
+
+- KHÔNG cài thêm router khác (`xiaomimimo-for-copilot`...): 2 router cùng hook Copilot sẽ đánh nhau và vỡ auth.
+- KHÔNG để router roam theo Settings Sync (đã chặn bằng `settingsSync.ignoredExtensions`) — máy/server nào cần thì cài tay từ file vsix này.
+
 ## Cấu trúc
 
 ```
@@ -59,4 +70,6 @@ Frontmatter đang dùng `model: "Free_Model"` — dành cho setup proxy nhiều 
     security.agent.md
     qc.agent.md
     devops.agent.md
+extensions/
+  9router-for-github-copilot-2.0.0.vsix
 ```
