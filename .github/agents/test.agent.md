@@ -2,7 +2,7 @@
 name: "Test"
 description: "Use when planning tests, writing test cases, executing tests, or validating functionality. Triggers: write test, run test, test coverage, e2e test, integration test, unit test, QA testing, regression test, test plan, test automation, fixture, mock, stub"
 tools: [read, edit, search, execute, web, todo]
-user-invocable: false
+user-invocable: true
 model: "Free_Model"
 ---
 
