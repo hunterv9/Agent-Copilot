@@ -51,6 +51,18 @@ Team Lead phải cập nhật trong chat trong lúc workflow chạy, không ch�
 - `🧠 [DECISION]`: các phương án, bằng chứng, lựa chọn cuối, phương án bị loại và bất đồng.
 
 Mỗi cập nhật quan trọng phải kèm work board ngắn gồm `Agent`, `Task`, `Status`, `Output / blocker`. Nếu VS Code thu gọn log nội bộ của subagent, các status message của Team Lead là audit trail hiển thị chính thức.
+### Chống chạy vô hạn
+
+Team Lead có ngân sách cố định để tránh chạy hàng chục phút hoặc cả ngày:
+
+- Exploration: tối đa 8 tool calls.
+- Quick Fix: tối đa 12 tool calls.
+- Bug Fix: tối đa 24 tool calls.
+- Standard Feature: tối đa 36 tool calls.
+- Full Release/Dev Swarm: tối đa 50 tool calls.
+
+Team Lead phải dừng nếu hai lần gọi liên tiếp không tạo thêm bằng chứng/kết quả, không retry lỗi quá một lần, và không tự retry toàn bộ context khi router báo `aborted`, `timeout`, `context length` hoặc lỗi transport. Thay đổi trên 3 file, nhiều module hoặc archive/delete thư mục phải quay lại human plan gate.
+
 ### Cơ chế tranh luận
 
 - Task nhỏ, rủi ro thấp: một agent phù hợp xử lý trực tiếp.
