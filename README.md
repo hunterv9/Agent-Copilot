@@ -39,6 +39,18 @@ Team Lead sẽ:
 4. Với task vừa/lớn hoặc có rủi ro, cho 2–3 agent đề xuất độc lập, phản biện chéo, sau đó để QC lập decision matrix trước khi chọn phương án. Báo cáo phải ghi rõ phương án bị loại, bằng chứng quyết định và bất đồng còn lại.
 5. Chỉ dừng để bạn quyết định ở human gate cho thay đổi lớn hoặc triển khai production; Team Lead không tự triển khai production.
 
+### Log tiến độ trực tiếp
+
+Team Lead phải cập nhật trong chat trong lúc workflow chạy, không chỉ trả kết quả cuối:
+
+- `🚦 [WORKFLOW]`: pipeline và phase bị bỏ qua.
+- `📤 [DISPATCH]`: agent nào nhận việc, phạm vi, đầu ra cần có, chạy song song hay không.
+- `⏳ [WAITING]`: đang chờ agent nào và chờ điều gì.
+- `✅ [DONE]`: agent đã xong, report/artifact nhận được và kết quả gate.
+- `⚠️ [BLOCKED]`: blocker, ảnh hưởng và người xử lý tiếp theo.
+- `🧠 [DECISION]`: các phương án, bằng chứng, lựa chọn cuối, phương án bị loại và bất đồng.
+
+Mỗi cập nhật quan trọng phải kèm work board ngắn gồm `Agent`, `Task`, `Status`, `Output / blocker`. Nếu VS Code thu gọn log nội bộ của subagent, các status message của Team Lead là audit trail hiển thị chính thức.
 ### Cơ chế tranh luận
 
 - Task nhỏ, rủi ro thấp: một agent phù hợp xử lý trực tiếp.
