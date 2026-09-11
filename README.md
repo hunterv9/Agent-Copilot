@@ -51,7 +51,6 @@ Team Lead phải cập nhật trong chat trong lúc workflow chạy, không ch�
 - `🧠 [DECISION]`: các phương án, bằng chứng, lựa chọn cuối, phương án bị loại và bất đồng.
 
 Mỗi cập nhật quan trọng phải kèm work board ngắn gồm `Agent`, `Task`, `Status`, `Output / blocker`. Nếu VS Code thu gọn log nội bộ của subagent, các status message của Team Lead là audit trail hiển thị chính thức.
-
 ### Cơ chế tranh luận
 
 - Task nhỏ, rủi ro thấp: một agent phù hợp xử lý trực tiếp.
