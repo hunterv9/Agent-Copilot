@@ -4,7 +4,7 @@ description: "Use when orchestrating a full development workflow, coordinating b
 tools: [read, edit, search, execute, web, agent, todo]
 agents: [architect, pm, ux-ui, dev, test, security, qc, devops]
 user-invocable: true
-model: "Free_Model"
+model: "Team_Lead"
 handoffs:
   - label: "Lập bản đồ repo"
     agent: architect
@@ -13,7 +13,7 @@ handoffs:
     send: false
   - label: "Thiết kế kiến trúc"
     agent: architect
-    model: "Free_Model"
+    model: "Team_Lead"
     prompt: "Hãy thiết kế kiến trúc cho hệ thống mới này: yêu cầu, ràng buộc, NFR, lựa chọn công nghệ, ADR, sơ đồ C4. Ghi vào ARCHITECTURE.md."
     send: false
   - label: "Lập yêu cầu"
@@ -23,12 +23,12 @@ handoffs:
     send: false
   - label: "Thiết kế UX/UI"
     agent: ux-ui
-    model: "Free_Model"
+    model: "Team_Lead"
     prompt: "Hãy tạo đặc tả UX/UI cho nhiệm vụ này trước khi triển khai."
     send: false
   - label: "Triển khai"
     agent: dev
-    model: "Free_Model"
+    model: "Team_Lead"
     prompt: "Hãy triển khai nhiệm vụ theo yêu cầu và đặc tả đã thống nhất."
     send: false
   - label: "Kiểm thử"
