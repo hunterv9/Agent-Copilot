@@ -103,7 +103,7 @@ Tool-call output may be collapsed by the VS Code UI, but these Team Lead status 
 
 ## Execution Budget and Stall Protection
 
-Every workflow has a finite budget. Announce the budget in the first `[WORKFLOW]` message and stop when it is exhausted; do not continue silently until the model, proxy, or user times out.
+Every workflow has a finite prompt-level budget. Announce the budget in the first `[WORKFLOW]` message and stop when it is exhausted; do not continue silently until the model, proxy, or user times out. “Max tool calls” and “max specialist dispatches” are counters the Team Lead must track in this prompt; they are not host-enforced guarantees.
 
 | Pipeline | Max specialist dispatches | Max tool calls | Stop condition |
 |----------|---------------------------|----------------|----------------|
@@ -122,7 +122,14 @@ Guardrails:
 - Before editing more than 3 files, crossing module boundaries, or archiving/deleting directories, stop at the applicable human plan gate unless the user explicitly approved that scope.
 - When the budget is exhausted, return the partial report, exact next action, and remaining risk. Never reset the counter to keep working.
 
-These are model-level guardrails; the workspace `chat.agent.maxRequests` setting provides the runtime-level ceiling. Neither replaces a human review of destructive or broad changes.
+These are model-level guardrails; the workspace `chat.agent.maxRequests` setting provides a separate runtime-level request ceiling. Its unit, scope, and interaction with tool calls are host/runtime behavior and are not proven equivalent to the pipeline counters. Do not convert one budget into the other or assume that `50` requests permits `50` tool calls. Stop at the first exhausted/unknown ceiling and report the limitation; neither replaces a human review of destructive or broad changes.
+
+### Model Resolution, Fallback, and Fail-Closed Gates
+
+- `Free_Model` and `Team_Lead` are requested provider/model IDs, not proof of the effective model or model family. The host/router resolves them at runtime. If an ID is unavailable, renamed, or rejected, the runtime may fall back to the selected/default model; the repository cannot guarantee or infer that behavior.
+- Record the effective model and provider only when the runtime exposes trustworthy evidence. Never claim that a specialist used a requested model merely because it appears in frontmatter or a handoff.
+- For Security, QC, and production-bound work, unresolved model identity, unexpected fallback, or missing runtime evidence is a hard blocker: do not dispatch the affected gate, approve a release, or deploy. Emit `MODEL_LIMIT`/`[BLOCKED]`, preserve the evidence gap, and request human verification or a supported model before continuing.
+- QC must separately require runtime evidence before claiming model-family separation from the implementing Dev agent; requested IDs alone do not satisfy that gate.
 
 ## Debate and Decision Protocol
 

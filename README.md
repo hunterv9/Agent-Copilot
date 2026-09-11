@@ -61,6 +61,8 @@ Team Lead có ngân sách cố định để tránh chạy hàng chục phút ho
 - Standard Feature: tối đa 36 tool calls.
 - Full Release/Dev Swarm: tối đa 50 tool calls.
 
+Đây là ngân sách do prompt yêu cầu Team Lead tự đếm để chống chạy vô hạn, không phải cam kết giới hạn cứng của host. `chat.agent.maxRequests` trong workspace là trần runtime riêng (hiện là `50` request theo tên setting); repo chưa xác minh request của host có cùng đơn vị/phạm vi với “tool calls” của pipeline. Không được coi hai con số là tương đương hoặc cộng dồn; khi một trần không rõ hiệu lực, Team Lead phải dừng và báo giới hạn runtime.
+
 Team Lead phải dừng nếu hai lần gọi liên tiếp không tạo thêm bằng chứng/kết quả, không retry lỗi quá một lần, và không tự retry toàn bộ context khi router báo `aborted`, `timeout`, `context length` hoặc lỗi transport. Thay đổi trên 3 file, nhiều module hoặc archive/delete thư mục phải quay lại human plan gate.
 
 ### Cơ chế tranh luận
@@ -77,20 +79,44 @@ Team Lead phải dừng nếu hai lần gọi liên tiếp không tạo thêm b�
 
 **Option B — global:** trỏ setting `chat.agentFilesLocations` tới thư mục `.github/agents/` này.
 
-## Lưu ý về model
+## Lưu ý về model và fallback
 
-Frontmatter đang dùng `model: "Free_Model"` — dành cho setup proxy nhiều model. Proxy của bạn phải expose đúng model ID `Free_Model` trong model picker của VS Code, nếu không Copilot sẽ fallback về model đang chọn. Muốn cố định model thật thì sửa thành tên chuẩn, ví dụ `model: 'GPT-5.2'` hoặc `model: 'Claude Sonnet 4.5 (copilot)'`.
+Frontmatter đang dùng hai model ID tuỳ biến:
+
+- `Free_Model`: dùng cho các agent chi phí thấp và proxy nhiều model.
+- `Team_Lead`: dùng cho Team Lead và một số agent cần điều phối/thiết kế.
+
+Proxy/host phải expose đúng các ID này trong model picker. Nếu ID không tồn tại, bị đổi tên hoặc provider không resolve được, runtime **có thể** fallback về model đang chọn hoặc một model mặc định; repo không kiểm soát và chưa xác minh chính sách fallback đó. Vì vậy tên trong frontmatter không phải bằng chứng model thực tế hay model family. Với Security, QC và mọi công việc production, nếu không có bằng chứng runtime về model đã resolve thì phải fail closed, dừng gate/dispatch và yêu cầu người dùng xác minh. Muốn cố định model thật thì sửa ID theo model picker của môi trường, ví dụ `GPT-5.2` hoặc `Claude Sonnet 4.5 (copilot)`.
 
 ## Extension phụ trợ — 9Router (proxy model)
 
-Team này dùng `model: "Free_Model"` qua proxy. Cài đúng 1 router duy nhất từ file đính kèm trong repo:
+Team này dùng các model ID tuỳ biến qua proxy. VSIX là binary executable của bên thứ ba; source, build provenance, chữ ký và quan hệ publisher chưa được xác minh độc lập. Không coi việc file nằm trong repo hoặc có checksum là bằng chứng authenticity. Chỉ cài sau khi quy trình bảo mật của môi trường đã phê duyệt artifact và endpoint.
+
+Nếu đã phê duyệt, cài đúng 1 router duy nhất từ file đính kèm trong repo, **không dùng `--force` mặc định**:
 
 ```powershell
-code --install-extension .\extensions\9router-for-github-copilot-2.0.0.vsix --force
+code --install-extension .\extensions\9router-for-github-copilot-2.0.0.vsix
 ```
 
 - KHÔNG cài thêm router khác (`xiaomimimo-for-copilot`...): 2 router cùng hook Copilot sẽ đánh nhau và vỡ auth.
-- KHÔNG để router roam theo Settings Sync (đã chặn bằng `settingsSync.ignoredExtensions`) — máy/server nào cần thì cài tay từ file vsix này.
+- `.vscode/settings.json` của repo **không** cấu hình `settingsSync.ignoredExtensions`; README không thể khẳng định extension bị chặn khỏi Settings Sync. Chính sách Settings Sync là user/server-level và phụ thuộc VS Code, vì vậy hãy kiểm tra policy thực tế trên từng máy; cài tay không tự tạo ra cơ chế chặn sync.
+- SHA-256 quan sát được của file hiện tại là `97314D7C3B0DB6FAE0188C76E3E2D55316C20672A30CF64E4B420C00253C5DE1`. Hash này chỉ dùng để phát hiện file đã thay đổi sau khi được cung cấp/duyệt; một hash tự công bố **không chứng minh** nguồn gốc, publisher, chữ ký hay an toàn của VSIX.
+
+## Ranh giới dữ liệu và rủi ro runtime
+
+- Prompt, đoạn code và context có thể được gửi tới server inference được cấu hình trong router (mặc định được quan sát là localhost, nhưng server URL có thể đổi). Không hứa rằng dữ liệu chỉ ở local: Copilot/VS Code host vẫn có thể có các luồng title, auth, telemetry hoặc dịch vụ riêng; chính sách TLS, retention và endpoint remote cần được xác minh theo môi trường.
+- Tool-calling làm model/router có thể đề xuất thao tác qua các tool agent đã khai báo. Prompt safety không phải permission boundary; endpoint hoặc prompt injection bị compromise có thể tạo đề xuất đọc/sửa file, chạy lệnh hoặc truy cập web. Chỉ bật với endpoint/model tin cậy và xem xét confirmation của host trước thao tác nhạy cảm.
+- `verboseLogging` nếu bật có thể ghi request chat đầy đủ, messages và tool arguments vào Output channel. Tắt mặc định không thay thế policy retention/redaction; không bật trong workspace có secret hoặc dữ liệu nhạy cảm nếu chưa có kiểm soát phù hợp.
+
+## Kiểm tra cấu hình agent
+
+Validator chỉ đọc file, không gọi network, không chạy VSIX và không cài extension. Chạy từ root repo:
+
+```powershell
+powershell -NoProfile -File .\scripts\validate-agents.ps1
+```
+
+Script sẽ kiểm tra 9 agent bắt buộc, frontmatter, tool/model allowlist, Team Lead agents và handoffs, JSON settings, VSIX được README tham chiếu, và các yêu cầu tool trong prompt nhưng không được khai báo. Exit code khác `0` nghĩa là có lỗi cần xử lý.
 
 ## Cấu trúc
 
@@ -108,4 +134,6 @@ code --install-extension .\extensions\9router-for-github-copilot-2.0.0.vsix --fo
     devops.agent.md
 extensions/
   9router-for-github-copilot-2.0.0.vsix
+scripts/
+  validate-agents.ps1
 ```
