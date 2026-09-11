@@ -2,7 +2,7 @@
 name: "QC"
 description: "Use when reviewing code quality, performing final quality checks, or approving releases. Triggers: quality review, code review, release approval, quality gate, release readiness, final check, QA approval, sign off, code audit"
 tools: [read, search, web]
-user-invocable: false
+user-invocable: true
 model: "Free_Model"
 ---
 

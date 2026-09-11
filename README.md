@@ -8,17 +8,19 @@ Bộ custom agents (`.agent.md`) cho GitHub Copilot trong VS Code: một team �
 |-------|---------|---------------|
 | `team-lead` | Điều phối toàn bộ workflow, triage task → chọn pipeline tối thiểu | ✅ |
 | `architect` | Discovery: vẽ bản đồ repo (`REPO_MAP.md`) · Greenfield: thiết kế kiến trúc mới (`ARCHITECTURE.md`, ADR, C4) | ✅ |
-| `pm` | Yêu cầu, user story, acceptance criteria, PRD | subagent |
-| `ux-ui` | Mockup HTML tương tác + user flow Mermaid + design tokens | subagent |
-| `dev` | Implement, fix bug, refactor | subagent |
-| `test` | Chiến lược test, test case, bug report | subagent |
+| `pm` | Yêu cầu, user story, acceptance criteria, PRD | ✅ |
+| `ux-ui` | Mockup HTML tương tác + user flow Mermaid + design tokens | ✅ |
+| `dev` | Implement, fix bug, refactor | ✅ |
+| `test` | Chiến lược test, test case, bug report | ✅ |
 | `security` | Threat modeling, OWASP Top 10, pentest, SAST/DAST/SCA | ✅ |
-| `qc` | Quality gate: chấm điểm, verdict APPROVED / CONDITIONAL / REJECTED | subagent |
-| `devops` | CI/CD, IaC, deployment, rollback, monitoring | subagent |
+| `qc` | Quality gate: chấm điểm, verdict APPROVED / CONDITIONAL / REJECTED | ✅ |
+| `devops` | CI/CD, IaC, deployment, rollback, monitoring | ✅ |
 
 ## Cách hoạt động
 
-Chỉ cần gọi **Team Lead**, mô tả task. Nó sẽ:
+Chỉ cần gọi **Team Lead**, mô tả mục tiêu/task. Team Lead sẽ tự gọi các agent chuyên môn bằng agent tool; bạn không cần bấm handoff trong workflow bình thường. Handoff trên giao diện chỉ là phương án dự phòng nếu runtime không cho phép gọi subagent tự động.
+
+Team Lead sẽ:
 
 1. **Triage** — phân loại task, chọn pipeline nhỏ nhất an toàn (không full pipeline mặc định):
 
@@ -33,7 +35,17 @@ Chỉ cần gọi **Team Lead**, mô tả task. Nó sẽ:
 | Solution Design | Hệ thống mới / tái kiến trúc → Architect → PM → Dev |
 
 2. **Công bố pipeline + phase bị skip kèm lý do** trước khi chạy (bạn có thể override).
-3. Thực thi từng phase, verify gate, trả **Team Status Report**.
+3. Tự giao việc, truyền đầy đủ report giữa các phase, chạy các phase độc lập song song khi runtime hỗ trợ, verify gate và trả **Team Status Report**.
+4. Với task vừa/lớn hoặc có rủi ro, cho 2–3 agent đề xuất độc lập, phản biện chéo, sau đó để QC lập decision matrix trước khi chọn phương án. Báo cáo phải ghi rõ phương án bị loại, bằng chứng quyết định và bất đồng còn lại.
+5. Chỉ dừng để bạn quyết định ở human gate cho thay đổi lớn hoặc triển khai production; Team Lead không tự triển khai production.
+
+### Cơ chế tranh luận
+
+- Task nhỏ, rủi ro thấp: một agent phù hợp xử lý trực tiếp.
+- Task vừa/lớn: 2–3 agent độc lập đưa ra phương án với trade-off, rủi ro, khả năng kiểm thử và mức tự tin.
+- Security tham gia khi có auth, PII, payment, crypto, input parsing, dependency hoặc infrastructure; Test đánh giá acceptance criteria và regression risk.
+- QC chấm điểm correctness, security, data integrity, maintainability, operability, performance, testability và delivery risk; Team Lead chọn phương án dựa trên bằng chứng, không chỉ theo đa số.
+- Nếu không thể giải quyết bất đồng bằng bằng chứng, Team Lead phải dừng ở human gate thay vì tự đoán.
 
 ## Cài đặt
 

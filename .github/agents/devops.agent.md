@@ -2,7 +2,7 @@
 name: "DevOps"
 description: "Use when managing deployments, CI/CD pipelines, infrastructure, containers, or cloud services. Triggers: deploy, CI/CD, pipeline, docker, kubernetes, infrastructure, cloud, AWS, Azure, GCP, terraform, monitoring, devops, release, build pipeline, IaC, container, helm, ansible"
 tools: [read, edit, search, execute, web, todo]
-user-invocable: false
+user-invocable: true
 model: "Team_Lead"
 ---
 
