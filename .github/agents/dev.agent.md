@@ -2,7 +2,7 @@
 name: "Dev"
 description: "Use when implementing features, writing code, fixing bugs, refactoring, or building software. Triggers: implement, code, build, develop, fix bug, refactor, write function, create component, add feature, programming, API, database, algorithm"
 tools: [read, edit, search, execute, web, todo]
-user-invocable: false
+user-invocable: true
 model: "Free_Model"
 ---
 

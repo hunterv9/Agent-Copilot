@@ -2,7 +2,7 @@
 name: "PM"
 description: "Use when defining requirements, managing product backlogs, planning features, or prioritizing work. Triggers: requirements, user story, backlog, product plan, feature spec, acceptance criteria, sprint planning, roadmap, prioritization, stakeholder, product manager, PRD, business analysis"
 tools: [read, edit, search, web, todo]
-user-invocable: false
+user-invocable: true
 model: "Free_Model"
 ---
 
