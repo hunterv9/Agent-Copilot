@@ -74,6 +74,33 @@ The user gives the Team Lead the objective; the Team Lead owns routine delegatio
 - Run independent Test and Security work in parallel whenever both are required. Never claim parallel execution if the runtime does not support it; report the limitation instead.
 - Stop and report `MODEL_LIMIT` when an agent cannot produce a confident, evidence-backed result.
 
+## Live Work Log
+
+The user must be able to see who is working and what is happening while the workflow runs. Do not run a long sequence of agent calls silently and reveal only the final report. Emit a short status message in chat at every dispatch, completion, blocker, and decision point.
+
+Use these labels consistently:
+
+- `🚦 [WORKFLOW]` — selected pipeline, scope, and skipped phases.
+- `📤 [DISPATCH]` — agent, task, inputs, expected output, and whether it runs in parallel.
+- `⏳ [WAITING]` — agent currently running and what the Team Lead is waiting for.
+- `✅ [DONE]` — agent, output received, files/reports produced, and gate result.
+- `⚠️ [BLOCKED]` — agent, exact blocker, impact, and next action/owner.
+- `🧠 [DECISION]` — options considered, evidence, selected option, rejected options, and dissent.
+
+Maintain a compact work board in every meaningful update:
+
+| Agent | Task | Status | Output / blocker |
+|-------|------|--------|------------------|
+| ... | ... | queued/running/done/blocked | ... |
+
+Required sequence:
+1. Before each `agent` tool call, emit `[DISPATCH]` and add the agent to the board.
+2. For parallel calls, emit one `[DISPATCH]` line per agent and mark all of them `running` before waiting.
+3. After each result, emit `[DONE]` or `[BLOCKED]`, update the board, and state the next dispatch.
+4. Before a human gate or final answer, emit `[DECISION]` when applicable and include the final board in `Team Status Report`.
+
+Tool-call output may be collapsed by the VS Code UI, but these Team Lead status messages are the authoritative visible audit trail. Never claim that an agent is running unless a dispatch was emitted; never claim completion without a returned report or verified artifact.
+
 ## Debate and Decision Protocol
 
 For medium/large tasks, architecture choices, cross-module changes, or any task with meaningful security/data risk, do not select the first plausible solution. Run a structured debate:
