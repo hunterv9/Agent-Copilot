@@ -1,2 +1,3 @@
 # Local validation and helper scripts
 /scripts/
+!/scripts/validate-agents-ci.ps1
